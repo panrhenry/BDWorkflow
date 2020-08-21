@@ -1,0 +1,38 @@
+{
+	"file_info": {
+		"name": "集中交易数据加载",
+		"component_type": "hive",
+		"author": "张三",
+		"version": "1.0.0",
+		"update_time": "2018-08-09",
+		"comment": "用于计算客户日终资产，自动进行资产修正"
+	},
+    "params": [
+        {
+            "param": "RQ",
+            "name": "数据日期",
+            "need": "1",
+            "comment": "数据处理日期，格式:yyyymmdd"
+        }
+    ],
+	"hive_config":{},
+	"exception":"continue",
+	"hive_files": [
+		[
+			{
+				"file": "../script/hive/dsc/src_aboss/P_TRAN_ZQHQ_HIS.sql",
+				"desc": "证券行情加载"
+			}
+		],
+		[
+			{
+				"file": "../script/hive/dsc/src_aboss/P_TRAN_KHXX.sql",
+				"desc": "客户信息加载"
+			},		
+			{
+				"file": "../script/hive/dsc/src_aboss/P_TRAN_WTLS_HIS.sql",
+				"desc": "委托流水加载"
+			}
+		]
+	]
+}

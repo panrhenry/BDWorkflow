@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataflow id="111" name="python测试" def="2018.03.28 11:00" modify="2018.03.28 11:30" creator="admin">
+    <steps>
+        <step id="0000" targetRef="1001" name="开始">
+            <nodeType>0</nodeType>
+            <xloc>10</xloc>
+            <yloc>100</yloc>
+        </step>
+
+        <step id="1001" sourceRef="0000" targetRef="1002" name="impala节点">
+            <sourceId>86</sourceId>
+            <nodeType>1</nodeType>
+            <nodeParam>{"RQ":"@rq"}</nodeParam>
+            <exception>0</exception>
+
+            <xloc>20</xloc>
+            <yloc>100</yloc>
+        </step>
+
+        <step id="1002" sourceRef="1001" targetRef="1003" name="hive节点">
+            <sourceId>80</sourceId>
+            <nodeType>2</nodeType>
+            <nodeParam>{"RQ":"@rq","KSRQ":"@rq","JSRQ":"@rq"}</nodeParam>
+            <xloc>30</xloc>
+            <yloc>100</yloc>
+        </step>
+
+        <step id="1003" sourceRef="1002" targetRef="1004" name="spark节点">
+            <sourceId>68</sourceId>
+            <nodeType>3</nodeType>
+            <nodeParam>{"KSRQ":"@rq","JSRQ":"@rq"}</nodeParam>
+            <xloc>40</xloc>
+            <yloc>100</yloc>
+        </step>
+
+        <step id="1004" sourceRef="1003" targetRef="1005" name="sqoop节点">
+            <sourceId>1</sourceId>
+            <nodeType>4</nodeType>
+            <nodeParam></nodeParam>
+            <xloc>40</xloc>
+            <yloc>120</yloc>
+        </step>
+
+        <step id="1005" sourceRef="1004" targetRef="9999" name="kettle节点">
+            <sourceId>1</sourceId>
+            <nodeType>5</nodeType>
+            <nodeParam>{"RQ":"@rq"}</nodeParam>
+            <xloc>30</xloc>
+            <yloc>120</yloc>
+        </step>
+
+        <step id="9999" sourceRef="1005" name="结束">
+            <nodeType>99</nodeType>
+            <xloc>20</xloc>
+            <yloc>120</yloc>
+        </step>
+    </steps>
+
+</dataflow>

@@ -1,0 +1,282 @@
+2018/11/20 by aqing
+修复ODS建表脚本生成程序多数据源下生成建表脚本相同的问题
+增加函数 gen_createdb_sql，创建建库脚本
+增加函数 gen_hdfs_sh，创建hdfs目录
+
+2018/11/22 by aqing
+配置文件增加platform平台类型，用于判断sql所用的语法
+增加函数 get_hive_cmd 用于生成Inceptor或者hive连接串
+调整 OdsDataCollect主函数多数据源获取出错的问题
+
+2018/11/23 by cdz
+1、增加写ODS数据处理日志表机制
+2、增加记录数比对处理
+
+2018/11/23/ by css
+OdsGenCreateTblSql.py
+1.调整  get_srdb_tblcol函数  中 B.COLUMN_TYPECHG值为""的情况 解决字段类型丢失问题
+由 IFNULL(B.COLUMN_TYPECHG,B.COLUMN_TYPE) AS COLUMN_TYPE,
+更改为
+CASE
+WHEN ISNULL(B.COLUMN_TYPECHG) OR (COLUMN_TYPECHG='')  THEN
+    B.COLUMN_TYPE
+ELSE
+    B.COLUMN_TYPECHG
+END  AS COLUMN_TYPE,
+
+2. 调整 gen_createtbl_sql 字段信息描述内容去掉含有'' 不然解析会报错
+ col_comment = col["COLUMN_COMMENT"]
+ 更改为
+ col_comment = str(col["COLUMN_COMMENT"]).replace("'", "")
+
+3 OdsDataCollect.py
+读配置文件read_config函数调整
+CONF.read(CONF_PATH)更改为
+CONF.read(CONF_PATH,'utf8')
+
+2018.11.24 by css
+调整get_ods_table chd模块impala参数
+  sql = "INSERT OVERWRITE TABLE %s(%s,DT) partition(dt=%s) SELECT %s,'%s' as DT FROM %s t" % (
+            ods_tbl_str, cols,  dt, cols, dt, stage_tbl_str)
+  改为
+  sql = "INSERT OVERWRITE TABLE %s(%s) partition(dt) SELECT %s,'%s' as DT FROM %s t" % (
+            ods_tbl_str, cols, cols, dt, stage_tbl_str)
+
+ods.cnf 增加log_cnt_file=/log/%%s_cnt.txt
+
+2018/11/26 by aqing
+修改OdsDataCollect.py 文件，去除sqoop执行命令中的--direct选项
+修改OdsDataCollect.py 文件, get_ods_tbl_count增加TDH支持，get_file_info函数增加TDH支持
+新增函数 get_hive_runenv() 获取Inceptor运行语句
+增加 global IS_TDH ，用于判断平台是否为TDH
+
+
+2018/11/26 by css
+修改OdsDataCollect.py 文件的 get_ods_table函数，增加INVALIDATE METADATA %s; 刷新缓冲层表
+
+2018/11/27 by aqing
+OdsGenCreateTblSql获取表信息函数增加dt_mode获取
+gen_createtbl_sql 函数增加根据dt_mode创建建表语句
+增加异常入参，默认为continue
+
+2018/11/27 by css
+调整 gen_createtbl_sql 字段信息描述内容去掉含有; 不然解析会报错
+ col_comment = str(col["COLUMN_COMMENT"]).replace("'", "")
+ 更改为
+ col_comment = str(col["COLUMN_COMMENT"]).replace("'", "").replace(";", "")
+
+ 2018/11/29 by css
+ 调整 OdsGenCreateTblsql.py 中 get_sql_str 增加 字段名加'`'
+ 调整 OdsDataCollect.py 中 get_ods_table cdh部分增加 分区判断 和 get_ods_table
+
+2018/11/30 by aqing
+调整get_ods_tbl_count函数，增加len(col_list) != 5判断，用于避免TDH处理中存在的sqoop查询内容未写入文件 \
+    而导致的KeyError问题
+
+2018/11/30 by css
+* 调整 OdsGenCreateTblSql.py 缓冲层库和目标层库创建
+* 调整 OdsDataCollect.py 支持缓冲库和目标库
+* 修正按月分区 和安年分区 错误
+
+2018/12/06 by css
+* 调整了 OdsGenCreateTblsql.py tran_type函数 调整varchar类型的字段长度增大一倍，TIMESTAMP()类型 转为 TIMESTAMP
+* 调整 OdsDataCollect.py 中 get_ods_table 增加 字段名加上'`'
++ OdsDataCollect.py 中 新增get_column_type函数 判断字段类型为date类型 进行转换
++ OdsMetadataCollect.py
+import os
+os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8' 解决中文乱码问题
+
+2018/12/13 by css
+* 调整了OdsDataCollect.py 中get_sqoop_inc_table get_sqoop_all_table 的sqoop命令 解决 oracle数据分隔符号异常问题
+
+2018/12/15 by css
+OdsGenCreateTblsql.py：
+hdfs 脚本第一行加入 "#! /bin/sh\n";
+OdsDataCollect.py：upd_ods_proc_logs
+处理判断条数不对情况
+
+2018/12/17 by css
+新增PushDataCheck.py  ods数据跟推送目标表数据的比较
+
+2018/12/20 by css
+OdsGenCreateTblsql.py：调整生成脚本语句 只有不存库或者表进行建库和建表
+OdsMetadataCollect.py 由指定系统粒度 增加为系统和用户粒度元数据的采集
+OdsDataCollect.py  start_ods_proc_logs 两个字段 `ODS_DB_NAME`,`ODS_TBL_NAME` 作为推送调度时候使用
+
+2018/12/21 by css
+OdsGenCreateTblsql.py：
+OdsMetadataCollect.py：
+OdsDataCollect.py：
+SRCDB_ID 数字参数改为 对应的名称参数值传入
+
+OracleUtil.py execute_sql函数去掉# return self.cursor.lastrowid
+新增PushDataCheck.py  比较记录推送到目标库里面
+
+2018/12/24 by
+OdsDataCollect.py：调整遇到源业务数据为0的时候  清空下ODS缓冲层表
+
+2018/12/27 by css
+OdsDataCollect.py：增加参数传入 RECOLECT 判断是否重新采集
+
+2019/01/04 by aqing
+OdsDataCollect.py：删除“TRUNCATE”语句，在源数据为0时，将缓冲库与目标库直接写为0
+
+2019/01/09 css
+OdsDataCollect.py：EXEC_RQ 参数调整 EXEC_JSRQ 新增EXEC_KSRQ
+2019/01/15 css
+OdsDataCollect.py：修复了作业调度正常 实际采集任务又执行失败情况 impala导入增加表元数据刷新
+
+2019/01/21 css
+OdsDataCollect.py：修复了ods采集模块 增加时间维度参数异常的问题
+
+2019/01/25
+
+OdsDataCollect.py：
+* 调整 get_srdb_tbl_list 函数 支持一次采集多张表
++ 增加 set_err_info(id,steps) 函数，错误日志记录
+
+2019/01/25
+采集程序bug修复
+OdsDataCollect.py：
++ 增加对源数据oracle存在clob字段内容换行符号去除不掉进行处理
+
+2019/01/25
+采集程序bug修复
+OdsDataCollect.py：
++ 修复采集程序 接口日志正常 调度失败
+2019/02/19
++OdsDataCollect.py 增加多线程并发 处理并发写日志异常问题
++OdsMetadataCollect.py 支持推送目标元数据采集
++ 参数 SRCDB_ID的值 支持id和系统用户名称
+  参数 TBLNAME的值 支持表名称或者对应的ID 
+ 
+2019/02/20 wjl
+OdsDataCollect.py：
+	1、程序增加BID入参，用于定位采集分组，获取相应分组下的表；
+	2、增加了get_tabname(bid)函数，用于根据bid将tblname=all转化为tblname=100234,100235,100236...的形式；
+	3、采集程序并行度改为从Ods.conf文件获取；
+	4、start_ods_proc_logs函数中，日志ID改为从cursor.lastrowid获取，尝试解决多个进程同时读表导致日志记录错误的问题
+	
+2019/02/22 css
+OdsDataCollect.py:
+	日志表里面的字段数据日志字段变更 和新增了FTYPE字段
+	
+2019/02/22 wjl
+OdsDataCollect.py:
+	在sqoop语句增加--bindir参数，指定sqoop作业生成的Java文件、class文件和jar包的位置，该参数取自Ods.conf下的sqoop_bindir=路径
+
+2019/03/01 aqing
+OdsDataCollect.py:
+    修复start_ods_proc_logs函数中，开始日期与结束日期写反的问题
+
+2019/03/06 css
+OdsDataCollect.py:
+	表名tbz_20190102 具有中文又有数字的表名 采集异常修复
+
+2019/03/07 css
+OdsDataCollect.py:+ 对于采集异常的表进行采集异常重新采集一次
+                  + UPDATE_DATAFLOW_LOGS_PATH函数 采集日志路径写到 数据流程表里面
+DBUtil.py: + execute_sql_sleep()函数
+
+2019/03/12 aqing
+OdsGenCreateTblSql.py:
+    get_srdb_tbl_list():解决单表采集时，带有下划线的表无法创建建表脚本的情况
+
+2019/03/13 aqing
+OdsDataCollect.py:
+    get_ods_table() 支持TDH历史数据采集
+    + get_jyr_list() 增加获取交易日函数，用于获取两个日期间的交易日
+	
+2019/03/15 wjl
+OdsMetadataCollect.py：
+	1、增加get_hive_tab_metadata()函数，用于获取hive元数据
+	2、入参FTYPE=3刷新hive元数据
+	3、更改batch_id的获取方式，改为从序列获取select bd.nextval('t_tables_chglog_batchid') from dual
+
+2019/03/20 wjl
+OdsGenCreateTblSql.py：
+	1、修复因为表不存在，没有字段导致生成的建表语句错误，脚本无法正常执行的BUG
+
+2019/03/22 css
+OdsDataCollect.py
+OdsGenCreateTblSql.py
+OdsMetadataCollect.py
+PushDataCheck.py  把数据库表名 大写调整为小写
+
+
+2019/03/29 css
+OdsMetadataCollect.py 去掉hive元数据调度模块 单独出去
+
+2019/04/15 
+1.OdsDataCollect.py 中read_config函数 
+#初始化group_concat长度大小
+增加 MYSQL.execute_sql("set group_concat_max_len =1024000", {})  
+
+2.OdsDataCollect.py 中get_ods_tbl_count函数中增加
+# 日志log目录下创建temp临时存放中间日志文件
+str = CONF.get("conf", "log_cnt_file")
+OSUtil.mkdir(sys.path[0] + str[:str.index('/', 5)])
+
+3.Ods.conf 配置log_cnt_file=/log/temp/%%s_cnt.txt调整
+   
+2019/05/21 wjl
+RunMetadataCollect.py:
+1、调整，将分区字段也存放到字段信息表中，备注分区字段，字段id取max(字段id);
+2、mysql5.7.x版本中，sql_mode的only_full_group_by模式是默认（开启），导致有些sql不兼容，初始化临时改下模式set session sql_mode=''
+
+2019-5-27 jiangbing
+1、sqoop执行器导出bug修改
+2、流程执行器超时终止bug修改
+
+2019/05/29 aqing
+1.OracleUtil.py:
+    初始化增加makedsn方式初始化连接，用于支持SID和SERVICE_NAME两种方式
+2.OdsDataCollect.py: 
+    get_rdbms_tbl_count()函数增加srcdb入参
+    get_rdbms_tbl_count()去除srcdb_dblink参数
+    execute_proc()去除srcdb_dblink入参
+    main()去除获取dblink连接串操作，改为get_rdbms_tbl_count()中判断连接方式
+3.OdsMetadataCollect.py:
+    get_oracle_tab_metadata()去除host,user,password等入参，调整为srcdb数组入参
+
+2019-05-29 css
+1.OdsDataCollect.py:
+    get_srdb_tbl_list()   concat('ods','_',lower(C.SOURCE_NAME)) AS ODS_DB_NAME 调整为 concat(lower(D.ODS_DB_USER)) AS ODS_DB_NAME ，目标表从接口信息表获得
+
+    execute_proc() 新增以下内容
+                scripts = get_impala_cmd(
+                    "INVALIDATE METADATA stage_" + tbl["ODS_DB_NAME"] + "." + tbl["ODS_TBL_NAME"] + ";")
+                LOGGER.info("ods缓冲层 scripts:---->" + scripts)
+                ProcUtil().single_pro(scripts)
+                scripts = get_impala_cmd("INVALIDATE METADATA " + tbl["ODS_DB_NAME"] + "." + tbl["ODS_TBL_NAME"] + ";")
+                LOGGER.info("ods层 scripts:---->" + scripts)
+     用于对于新建的表且数据条数为0的情况，刷新表
+2 OdsGenCreateTblSql.py 修复目标数据库名称从数据采集接口获取，实现支持一张表推送多目标库
+
+2019/05/31 wjl
+OdsGenCreateTblSql.py:
+1、调整类型转换函数tran_type，增加逻辑判断Oracle的number类型，number(p,s)，如果 p<s ，则 number(p,s)转化为decimal(s+2,s)；如果 s<0 ，则 number(p,s)转化为decimal，不指定精度
+
+2019/07/01 wjl
+utils/OdsDBUtil.py:
+1、增加sqlserver类，用于连接和操作sqlserver数据库
+OdsGenCreateTblSql.py:
+1、调整tran_type函数，增加部分字段的特殊处理
+OdsDataCollect.py：
+1、支持MySQL和SQL server数据库的采集；
+2、exception之后的报错日志统一改为logger.error写日志
+RunMetadataCollect.py:
+1、刷新元数据增加MySQL和SQL server的支持
+
+2019/07/04 wjl
+OdsGenCreateTblSql.py:
+1、修改tran_type函数，如果目标数据类型不是DECIMAL或者VARCHAR或者CHAR，则按照‘(’切分，取切分后的第一个值，避免得到的目标值因为有括号而报错
+
+2019/07/12 wjl  
+OdsGenCreateTblSql.py:
+1、修改tran_type函数，对数据类型中的unsigned修饰做过滤处理，前端配置int，bigint等类型对应decimal，decimal默认是decimal(10)
+OdsDataCollect.py：
+1、修复采集的表在源库不存在的时候会显示正常，但整体作业异常的BUG，判断源表不存在则置为该表采集异常
+
+
+

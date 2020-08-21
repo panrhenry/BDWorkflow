@@ -1,0 +1,52 @@
+{
+	"file_info": {
+		"name": "ids清算",
+		"component_type": "spark",
+		"author": "张三",
+		"version": "1.0.0",
+		"update_time": "2018_08_09",
+		"comment": "用于计算客户日终资产，自动进行资产修正"
+	},
+    "params": [
+        {
+            "param": "RQ",
+            "name": "数据日期",
+            "need": "1",
+            "comment": "数据处理日期，格式:yyyymmdd"
+        }
+    ],
+	"spark_config":{
+		"master": "yarn",
+		"deploy_mode": "cluster",
+		"properties_file": "../conf.properties",
+		"executor_memory": "2G",
+		"executor_cores": "5",
+		"num_executors": "4",
+		"driver_memory": "1G"
+	}
+	"exception":"continue",
+	"spark_files": [
+		[
+			{
+				"jar": "../script/spark/jar/ids.jar",
+				"desc": "ids清算jar",
+				"class": "com.apex.ids.processor.IdsRunner",
+				"spark_config":{
+					"master": "yarn",
+					"deploy_mode": "cluster",
+					"properties_file": "../conf.properties",
+					"executor_memory": "2G",
+					"executor_cores": "5",
+					"num_executors": "4",
+					"driver_memory": "1G"
+				}
+			}
+		],
+		[
+			{
+				"sql": "../script/spark/sql/ids.sql",
+				"desc": "ids清算sql"
+			}
+		]
+	]
+}

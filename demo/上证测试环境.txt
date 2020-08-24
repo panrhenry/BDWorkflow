@@ -1,0 +1,59 @@
+wifi名：shzq
+crm5
+  shzq-123
+
+vpn:
+apexvpn06 / APEXVPN06
+apexvpn05 / APEXVPN05
+dingdian  / bd**123
+
+https://180.168.97.30 
+
+https://10.10.1.127/bhost/
+
+10.2.1.161:1521/jjjgbs
+
+外网机子用户密码：root/cdh@apex2017
+
+IP：10.2.1.72 主机名：dsj-apex1    安装mysql
+IP:10.2.1.73 主机名：dsj-apex2     部署tomcat  (应用节点)
+用户 root 密码 shzq-123
+ 
+采集的柜台：集中交易 、cif、融资融券、个股期权、crm     
+ 
+大数据边缘节点机器 10.2.1.65 
+顶点的用户 dingdian 密码 dingdian_123
+
+在65上执行
+impala-shell -i 10.2.1.64 -l -udingdian  -pdingdian_123 --auth_creds_ok_in_clear -f P_STAT_YYB_ZC_R.sql --var="RQ=20180606"
+54--59节点上都有可以运行impala
+
+密码： ldap_password_cmd  
+登陆impala的命令：
+impala-shell -i 10.2.1.64 -l -udingdian --ldap_password_cmd="echo  -n dingdian_123"  --auth_creds_ok_in_clear 
+ 
+在65上执行
+登陆hive命令
+beeline -u jdbc:hive2://10.2.1.64:10010/default  -n dingdian -p dingdian_123
+
+beeline -u jdbc:hive2://vip.dsjkaifa.com:10010/default  -n dingdian -p dingdian_123
+
+hue地址：http://10.2.1.93:8888    http://10.2.1.93:8889/hue
+用户和密码: dingdian 密码: dingdian_123
+
+cm地址是http://10.2.1.93:7180
+用户和密码: dingdian 密码: dingdian_123
+
+mysql登录账户密码:
+mysql -uroot -papexsoft
+
+
+大数据 \n平台地址
+10.2.1.73:10501
+用户名：admin
+密码：bd**123
+
+  
+  
+
+
